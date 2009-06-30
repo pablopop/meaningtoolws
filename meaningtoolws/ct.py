@@ -13,6 +13,7 @@ Meaningtool Category Tree REST API v0.1 client
 Official documentation for the REST API v0.1 can be found at
 http://meaningtool.com/docs/ws/ct/restv0.1
 """
+from scoring_exceptions import ScoringError
 
 import re
 import urllib
@@ -24,7 +25,8 @@ except ImportError:
     import simplejson as json
 
 
-MT_BASE_URL = u"http://ws.meaningtool.com/ct/restv0.1"
+MT_BASE_URL = u"http://www.meaningtool.com/ws/ct/restv0.1"
+#MT_BASE_URL = u"http://ws.meaningtool.com/ct/restv0.1"
 
 _re_url = re.compile(ur"^https?://.+$")
 
@@ -50,9 +52,9 @@ class ResultError(Result, Exception):
 
 
 class Client(object):
-    def __init__(self, ct_key):
+    def __init__(self, ct_key, base_url=MT_BASE_URL):
         self.ct_key = ct_key
-        self._base_url = u"%s/%s" % (MT_BASE_URL, ct_key)
+        self._base_url = u"%s/%s" % (base_url, ct_key)
 
     def __repr__(self):
         return u"<%s - ct_key: %s>" % (self.__class__.__name__, self.ct_key)
@@ -90,7 +92,7 @@ class Client(object):
         if status == "ok":
             return Result(status_errno, status_message, data)
         else:
-            raise ResultError(status_errno, status_message, data)
+            raise ScoringError.from_code(status_message)
 
     def _parse_result_json(self, raw):
         return self._parse_result_base(json.loads(raw, encoding="utf8"))
